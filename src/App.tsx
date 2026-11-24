@@ -10,9 +10,10 @@ import Body from './screens/Body'
 import SettingsScreen from './screens/Settings'
 import Tasks from './screens/Tasks'
 import WishScreen from './screens/Wish'
+import Bucket from './screens/Bucket'
 import Reflect, { type ReflectView } from './screens/Reflect'
 
-export type Tab = 'home' | 'habits' | 'tasks' | 'money' | 'wish' | 'body' | 'settings' | 'reflect' | 'journal'
+export type Tab = 'home' | 'habits' | 'tasks' | 'money' | 'wish' | 'bucket' | 'body' | 'settings' | 'reflect' | 'journal'
 export type HabitsView = 'daily' | 'weekly' | 'monthly' | 'calendar'
 export type JournalTarget = { kind: 'daily' | 'weekly' | 'monthly'; periodKey: string }
 export type Go = (tab: Tab, opts?: { habitsView?: HabitsView; journal?: JournalTarget }) => void
@@ -23,6 +24,7 @@ const NAV: { tab: Tab; icon: string; label: string }[] = [
   { tab: 'tasks', icon: 'tasks', label: 'TASKS' },
   { tab: 'money', icon: 'money', label: 'MONEY' },
   { tab: 'wish', icon: 'gift', label: 'WISH' },
+  { tab: 'bucket', icon: 'star', label: 'LIST' },
   { tab: 'body', icon: 'body', label: 'BODY' },
   { tab: 'reflect', icon: 'reflect', label: 'REFLECT' },
 ]
@@ -30,7 +32,7 @@ const NAV: { tab: Tab; icon: string; label: string }[] = [
 const readHash = (): Tab => {
   const h = location.hash.replace('#', '') as Tab
   if (h === 'journal') return 'reflect'
-  return ['home', 'habits', 'tasks', 'money', 'wish', 'body', 'settings', 'reflect'].includes(h) ? h : 'home'
+  return ['home', 'habits', 'tasks', 'money', 'wish', 'bucket', 'body', 'settings', 'reflect'].includes(h) ? h : 'home'
 }
 
 export default function App() {
@@ -84,6 +86,7 @@ export default function App() {
       {tab === 'tasks' && <Tasks />}
       {tab === 'money' && <Money />}
       {tab === 'wish' && <WishScreen />}
+      {tab === 'bucket' && <Bucket />}
       {tab === 'body' && <Body />}
       {tab === 'settings' && <SettingsScreen go={go} />}
       {tab === 'reflect' && <Reflect key={reflectKey} view={reflectView} onView={setReflectView} journal={journal} />}
@@ -133,7 +136,7 @@ export default function App() {
                   <span className={`flex h-7 w-10 items-center justify-center rounded-full transition ${active ? 'bg-sage-light' : ''}`}>
                     <Icon name={n.icon} size={21} strokeWidth={active ? 1.9 : 1.5} />
                   </span>
-                  <span className="whitespace-nowrap font-serif font-semibold tracking-[0.03em]" style={{ fontSize: 'min(10px, 2.65vw)' }}>{n.label}</span>
+                  <span className="whitespace-nowrap font-serif font-semibold tracking-[0.03em]" style={{ fontSize: 'min(9.5px, 2.4vw)' }}>{n.label}</span>
                 </button>
               </li>
             )

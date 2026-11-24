@@ -1,6 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type {
-  Category, Habit, Task, Wish, Recurring, LifeGoal, HabitLog, HealthLog, Journal, RestDay, SavingsGoal, Settings, Transaction, WeightLog, Workout,
+  BucketItem, Category, Habit, Task, Wish, Recurring, LifeGoal, HabitLog, HealthLog, Journal, RestDay, SavingsGoal, Settings, Transaction, WeightLog, Workout,
 } from './types'
 import { DEFAULT_SETTINGS } from './types'
 import { MONTHLY_WEEK, WEEKLY_DAY } from './routineDefaults'
@@ -20,6 +20,7 @@ export class MyLifeDB extends Dexie {
   wishes!: EntityTable<Wish, 'id'>
   recurring!: EntityTable<Recurring, 'id'>
   lifeGoals!: EntityTable<LifeGoal, 'id'>
+  bucket!: EntityTable<BucketItem, 'id'>
   kv!: EntityTable<{ key: string; value: unknown }, 'key'>
 
   constructor() {
@@ -47,13 +48,14 @@ export class MyLifeDB extends Dexie {
     this.version(4).stores({ wishes: '++id, group, order' })
     this.version(5).stores({ recurring: '++id', transactions: '++id, date, type, categoryId, recurringId, goalId' })
     this.version(6).stores({ lifeGoals: '++id, horizon, parentId' })
+    this.version(7).stores({ bucket: '++id, year, order' })
   }
 }
 
 export const db = new MyLifeDB()
 
 export const TABLES = [
-  'habits', 'habitLogs', 'restDays', 'categories', 'transactions', 'weights', 'workouts', 'health', 'journals', 'savingsGoals', 'tasks', 'wishes', 'recurring', 'lifeGoals', 'kv',
+  'habits', 'habitLogs', 'restDays', 'categories', 'transactions', 'weights', 'workouts', 'health', 'journals', 'savingsGoals', 'tasks', 'wishes', 'recurring', 'lifeGoals', 'bucket', 'kv',
 ] as const
 
 export async function getSettings(): Promise<Settings> {

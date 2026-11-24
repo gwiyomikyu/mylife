@@ -102,6 +102,18 @@ export interface Wish {
   createdAt: number
 }
 
+/** 1年のやりたいことリスト */
+export interface BucketItem {
+  id?: number
+  year: number
+  text: string
+  memo: string
+  done: boolean
+  doneAt?: number
+  order: number
+  createdAt: number
+}
+
 // ---- Phase 2 以降で使うテーブル（スキーマだけ先に用意） ----
 export interface HealthLog {
   date: string
