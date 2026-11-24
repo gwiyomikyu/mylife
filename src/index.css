@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 既定：ペールピンク（背景）・ミルク（カード）・モカ（アクセント）・ココア（文字） */
+:root, [data-theme="milk"] { --c-ivory: 247 238 236; --c-cream: 242 229 225; --c-beige: 235 220 214; --c-greige: 214 196 188; --c-stone: 163 146 131; --c-stonedark: 134 115 95; --c-sagelight: 240 228 217; --c-sage: 166 138 115; --c-sagedark: 138 111 91; --c-sagedeep: 107 84 68; --c-ink: 92 74 62; --c-inksoft: 125 106 93; --c-inkfaint: 156 138 124; --c-clay: 201 153 139; --c-card: 253 251 247; }
+/* テーマ（色味）。クラス名は sage のままで、値をテーマごとに差し替える */
+[data-theme="sage"] { --c-ivory: 250 248 243; --c-cream: 243 239 231; --c-beige: 233 226 214; --c-greige: 207 198 184; --c-stone: 163 155 143; --c-stonedark: 124 117 107; --c-sagelight: 227 234 219; --c-sage: 163 179 148; --c-sagedark: 118 137 106; --c-sagedeep: 94 112 84; --c-ink: 59 57 53; --c-inksoft: 110 105 98; --c-inkfaint: 168 162 153; --c-clay: 201 169 140; --c-card: 255 255 255; }
+[data-theme="mocha"] { --c-ivory: 248 245 240; --c-cream: 240 234 225; --c-beige: 228 218 203; --c-greige: 203 191 174; --c-stone: 163 150 132; --c-stonedark: 126 113 99; --c-sagelight: 237 227 215; --c-sage: 191 166 141; --c-sagedark: 142 117 96; --c-sagedeep: 110 88 71; --c-ink: 61 54 49; --c-inksoft: 111 101 93; --c-inkfaint: 169 158 147; --c-clay: 196 154 126; --c-card: 255 255 255; }
+[data-theme="rose"] { --c-ivory: 252 248 246; --c-cream: 246 237 233; --c-beige: 237 223 217; --c-greige: 214 196 189; --c-stone: 173 156 150; --c-stonedark: 133 117 112; --c-sagelight: 244 227 224; --c-sage: 216 174 168; --c-sagedark: 179 129 123; --c-sagedeep: 142 97 92; --c-ink: 63 54 52; --c-inksoft: 116 101 95; --c-inkfaint: 174 160 154; --c-clay: 205 168 143; --c-card: 255 255 255; }
+[data-theme="blue"] { --c-ivory: 247 248 247; --c-cream: 238 241 241; --c-beige: 224 230 230; --c-greige: 194 203 204; --c-stone: 151 161 163; --c-stonedark: 110 120 123; --c-sagelight: 222 232 236; --c-sage: 162 184 194; --c-sagedark: 110 138 151; --c-sagedeep: 84 110 122; --c-ink: 52 58 61; --c-inksoft: 99 107 111; --c-inkfaint: 157 165 168; --c-clay: 187 169 150; --c-card: 255 255 255; }
+
+:root { color-scheme: light; }
+html, body { background: rgb(var(--c-ivory)); color: rgb(var(--c-ink)); -webkit-text-size-adjust: 100%; }
+body { margin: 0; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
+input, select, textarea, button { font: inherit; color: inherit; }
+/* iOS Safari のズーム防止のため入力欄は 16px 以上 */
+input, select, textarea { font-size: 16px; }
+.pt-safe { padding-top: env(safe-area-inset-top); }
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+.label-en { font-family: "Cormorant Garamond", Georgia, serif; letter-spacing: 0.14em; text-transform: uppercase; }
+@keyframes sheet-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+.animate-sheet { animation: sheet-in .28s cubic-bezier(.2,.8,.2,1); }
+.animate-fade { animation: fade-in .2s ease-out; }
+@keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.12); } 100% { transform: scale(1); } }
+.animate-pop { animation: pop .25s ease-out; }
+@keyframes screen-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.animate-screen { animation: screen-in .24s cubic-bezier(.2,.8,.2,1); }
+@keyframes burst { 0% { opacity: 0; transform: rotate(var(--a)) translateY(0) scale(.4); } 25% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(-1 * var(--d))) scale(1); } }
+.burst-dot { position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; margin: -3.5px; border-radius: 9999px; animation: burst .9s ease-out forwards; }
+@keyframes glow { 0%, 100% { box-shadow: 0 0 0 0 rgb(var(--c-sage) / 0); } 40% { box-shadow: 0 0 0 10px rgb(var(--c-sage) / .18); } }
+.animate-glow { animation: glow 1.2s ease-out; }
+@media (prefers-reduced-motion: reduce) { .animate-sheet, .animate-fade, .animate-pop, .animate-screen, .burst-dot, .animate-glow { animation: none; } .burst-dot { display: none; } }

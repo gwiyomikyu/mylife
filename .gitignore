@@ -1,0 +1,5 @@
+node_modules
+dist
+dist-pwa
+*.log
+.DS_Store
