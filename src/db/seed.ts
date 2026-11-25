@@ -1,4 +1,5 @@
-import { db, saveSettings } from './db'
+import { db, getSettings, saveSettings, TABLES } from './db'
+import { DEFAULT_SETTINGS } from './types'
 import { MONTHLY_WEEK, WEEKLY_DAY } from './routineDefaults'
 import type { Category, Habit, HabitFrequency, HabitLog, TxType } from './types'
 import { addDays, todayKey, weekStart } from '../lib/date'
@@ -49,13 +50,51 @@ const CATEGORIES: [TxType, string, string][] = [
   ['saving', '積立・投資', ''],
 ]
 
-export async function seedIfEmpty() {
-  const seeded = await db.kv.get('seeded')
-  if (seeded) return
+/**
+ * はじめて開いたかどうか。
+ * 以前は自動でサンプルを入れていたが、ホーム画面から削除→追加し直したときなどに
+ * サンプルが勝手に戻ってしまうため、最初に「どう始めるか」を選んでもらう。
+ */
+export async function needsWelcome(): Promise<boolean> {
+  if (await db.kv.get('seeded')) return false
+  // 印がなくても記録が残っていれば、そのまま使う
+  const has = (await db.habits.count()) + (await db.transactions.count()) + (await db.categories.count())
+  if (has > 0) { await markSeeded(); return false }
+  return true
+}
+
+export const markSeeded = () => db.kv.put({ key: 'seeded', value: Date.now() })
+
+async function seedCategories() {
+  const cats: Category[] = CATEGORIES.map(([type, name, note], i) => ({ type, name, note, order: i }))
+  await db.categories.bulkAdd(cats)
+}
+
+/** まっさらで始める（家計簿のカテゴリだけ用意） */
+export async function startEmpty() {
+  await db.transaction('rw', [db.categories, db.kv], async () => {
+    if ((await db.categories.count()) === 0) await seedCategories()
+    await markSeeded()
+  })
+}
+
+/** おすすめの習慣とサンプル記録を入れて試す */
+export async function startWithSamples() {
   await db.transaction('rw', [db.habits, db.categories, db.kv, db.habitLogs, db.transactions, db.weights, db.workouts], async () => {
     await seedBase()
     await seedSamples()
-    await db.kv.put({ key: 'seeded', value: Date.now() })
+    await markSeeded()
+  })
+}
+
+/** すべてのデータを消して、まっさらにする（色やタブの位置などの見た目の設定は残す） */
+export async function resetAll() {
+  const s = await getSettings()
+  await db.transaction('rw', TABLES.map((t) => db.table(t)), async () => {
+    for (const t of TABLES) await db.table(t).clear()
+    await seedCategories()
+    await db.kv.put({ key: 'settings', value: { ...DEFAULT_SETTINGS, palette: s.palette, navPosition: s.navPosition, theme: s.theme } })
+    await markSeeded()
   })
 }
 
@@ -69,8 +108,7 @@ async function seedBase() {
     ...(frequency === 'monthly' ? { dueWeek: MONTHLY_WEEK[name] ?? 1 } : {}),
   }))
   await db.habits.bulkAdd(habits)
-  const cats: Category[] = CATEGORIES.map(([type, name, note], i) => ({ type, name, note, order: i }))
-  await db.categories.bulkAdd(cats)
+  if ((await db.categories.count()) === 0) await seedCategories()
 }
 
 /** 動きがわかるように、直近の記録を少しだけサンプルとして入れておく（設定から削除可） */

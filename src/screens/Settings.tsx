@@ -6,7 +6,7 @@ import { Button, Card, Field, IconButton, inputCls, SectionTitle, Segmented, toa
 import { Icon } from '../components/Icon'
 import { useCategories, useSettings } from '../lib/store'
 import { backupName, exportJSON, exportMoneyCSV, importJSON, saveFile } from '../lib/backup'
-import { deleteSampleRecords } from '../db/seed'
+import { deleteSampleRecords, resetAll } from '../db/seed'
 import { parseNum } from '../lib/format'
 import { buildReminderICS, DEFAULT_REMINDERS, type Reminders } from '../lib/ics'
 import { useHabits } from '../lib/store'
@@ -295,7 +295,7 @@ function CategoryManager() {
 
 function DataManager() {
   const fileRef = useRef<HTMLInputElement>(null)
-  const [confirm, setConfirm] = useState<null | 'restore' | 'samples'>(null)
+  const [confirm, setConfirm] = useState<null | 'restore' | 'samples' | 'reset'>(null)
   const [pending, setPending] = useState<string | null>(null)
   const [persisted, setPersisted] = useState<boolean | null>(null)
   useEffect(() => { navigator.storage?.persisted?.().then(setPersisted).catch(() => setPersisted(null)) }, [])
@@ -337,17 +337,18 @@ function DataManager() {
         <DataButton icon="download" title="バックアップを書き出す" sub="すべての記録を JSON ファイルで保存" onClick={backup} />
         <DataButton icon="upload" title="バックアップから復元" sub="JSON ファイルを読み込み（現在のデータは置き換え）" onClick={() => fileRef.current?.click()} />
         <DataButton icon="money" title="家計簿を CSV で書き出す" sub="Excel・Numbers で開けます" onClick={csv} />
-        <DataButton icon="trash" title="サンプル記録を消す" sub="家計簿・体重・運動・チェック記録を空にします（習慣とカテゴリは残ります）" onClick={() => setConfirm('samples')} />
+        <DataButton icon="trash" title="記録だけ消す" sub="家計簿・体重・運動・チェック記録を空にします（習慣とカテゴリは残ります）" onClick={() => setConfirm('samples')} />
+        <DataButton icon="trash" title="すべて消して、まっさらにする" sub="習慣・目標・リストもすべて消します。開き直してもサンプルは戻りません（色の設定は残ります）" onClick={() => setConfirm('reset')} />
       </div>
       <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
 
       {confirm && (
         <div className="mt-4 rounded-2xl bg-cream p-4">
-          <p className="text-[13px] text-ink">{confirm === 'restore' ? '現在のデータをバックアップの内容で置き換えます。よろしいですか？' : '家計簿・体重・運動・習慣チェックの記録をすべて消します。よろしいですか？'}</p>
+          <p className="text-[13px] text-ink">{confirm === 'restore' ? '現在のデータをバックアップの内容で置き換えます。よろしいですか？' : confirm === 'reset' ? 'すべてのデータを消して、まっさらな状態にします。元に戻せないので、必要なら先にバックアップを書き出してください。よろしいですか？' : '家計簿・体重・運動・習慣チェックの記録をすべて消します。よろしいですか？'}</p>
           <div className="mt-3 flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={() => { setConfirm(null); setPending(null) }}>やめる</Button>
-            <Button className="flex-1" onClick={confirm === 'restore' ? restore : async () => { await deleteSampleRecords(); setConfirm(null); toast('記録を消しました') }}>
-              {confirm === 'restore' ? '復元する' : '消す'}
+            <Button className="flex-1" onClick={confirm === 'restore' ? restore : confirm === 'reset' ? async () => { await resetAll(); setConfirm(null); toast('まっさらにしました') } : async () => { await deleteSampleRecords(); setConfirm(null); toast('記録を消しました') }}>
+              {confirm === 'restore' ? '復元する' : confirm === 'reset' ? 'すべて消す' : '消す'}
             </Button>
           </div>
         </div>

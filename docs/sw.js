@@ -1,5 +1,5 @@
 // MY LIFE のオフライン用。アプリ本体だけを保存し、記録データ（IndexedDB）には触れない
-const CACHE = 'mylife-v3'
+const CACHE = 'mylife-v4'
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png']
 
 self.addEventListener('install', (e) => {
