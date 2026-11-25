@@ -1,3 +1,4 @@
+import { journalPreview } from './Journal'
 import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
@@ -121,7 +122,7 @@ export function HabitCalendar({ habits, map, rest, onOpenDay, go, onEdit }: {
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-sage/45" />半分以上</span>
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-sage-light" />少し</span>
           <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-sage-deep" />運動</span>
-          <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-clay" />ふりかえり</span>
+          <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-clay" />日記</span>
         </div>
       </Card>
 
@@ -140,16 +141,16 @@ export function HabitCalendar({ habits, map, rest, onOpenDay, go, onEdit }: {
           <div className="rounded-2xl bg-cream/60 py-2"><p className="text-[10px] text-ink-faint">運動</p><p className="text-[13px] tabular-nums text-ink">{selWorkouts.length ? `${selWorkouts.reduce((a, w) => a + w.minutes, 0)}分` : '—'}</p></div>
           <div className="rounded-2xl bg-cream/60 py-2"><p className="text-[10px] text-ink-faint">体重</p><p className="text-[13px] tabular-nums text-ink">{selWeight ? `${selWeight.weight.toFixed(1)}kg` : '—'}</p></div>
         </div>
-        {selJournal && (Object.values(selJournal.fields).some(Boolean)) && (
-          <p className="mt-3 line-clamp-2 rounded-2xl bg-sage-light/50 px-3 py-2 text-[12px] leading-relaxed text-ink-soft">
-            {Object.values(selJournal.fields).filter(Boolean)[0]}
+        {selJournal && journalPreview('daily', selJournal.fields) && (
+          <p className="mt-3 line-clamp-2 whitespace-pre-line rounded-2xl bg-sage-light/50 px-3 py-2 text-[12px] leading-relaxed text-ink-soft">
+            {journalPreview('daily', selJournal.fields)}
           </p>
         )}
         <div className="mt-3 flex gap-2">
           <button type="button" onClick={() => onOpenDay(sel)} className="flex-1 rounded-2xl bg-cream/70 py-2.5 text-[13px] text-ink">この日のチェックへ</button>
           {go && sel <= today && (
             <button type="button" onClick={() => go('journal', { journal: { kind: 'daily', periodKey: sel } })} className="flex flex-1 items-center justify-center gap-1 rounded-2xl bg-cream/70 py-2.5 text-[13px] text-ink">
-              <Icon name="edit" size={14} />{selJournal ? 'ふりかえりを見る' : 'ふりかえりを書く'}
+              <Icon name="edit" size={14} />{selJournal ? '日記を見る' : '日記を書く'}
             </button>
           )}
         </div>

@@ -13,7 +13,7 @@ export default function Reflect({ view: initialView, onView, journal }: { view: 
     <div>
       <PageHeader en="Reflect" ja="ふりかえり・目標" />
       <div className="space-y-4 px-4">
-        <Segmented value={view} onChange={setView} options={[{ value: 'goals', label: '目標' }, { value: 'journal', label: 'ふりかえり' }]} />
+        <Segmented value={view} onChange={setView} options={[{ value: 'goals', label: '目標' }, { value: 'journal', label: '日記・ふりかえり' }]} />
         {view === 'goals' ? <GoalsMap /> : <JournalScreen key={journal ? journal.kind + journal.periodKey : 'j'} initial={journal} embedded />}
       </div>
     </div>

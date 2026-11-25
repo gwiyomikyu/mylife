@@ -220,13 +220,13 @@ function JournalCard({ go, today }: { go: Go; today: string }) {
   const d = fromKey(today)
   const lastDays = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate() - d.getDate() < 3
   const items = [
-    { kind: 'daily' as const, key: today, label: '今日', hint: '' },
+    { kind: 'daily' as const, key: today, label: '今日の日記', hint: '' },
     { kind: 'weekly' as const, key: ws, label: '今週', hint: d.getDay() === 0 ? 'ふりかえりの日' : '' },
     { kind: 'monthly' as const, key: mk, label: '今月', hint: lastDays ? 'もうすぐ月末' : '' },
   ]
   return (
     <Card>
-      <SectionTitle en="Journal" ja="ふりかえり" />
+      <SectionTitle en="Journal" ja="日記・ふりかえり" />
       <div className="grid grid-cols-3 gap-2">
         {items.map((it) => {
           const done = written.has(`${it.kind}|${it.key}`)

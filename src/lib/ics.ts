@@ -80,7 +80,7 @@ export function buildReminderICS(habits: Habit[], r: Reminders): { text: string;
     }
   }
   if (r.journal) {
-    evs.push({ uid: 'journal-daily', summary: 'MY LIFE｜今日のふりかえり', desc: '今日よかったこと・頑張ったこと・気分・明日やりたいこと', time: r.journalTime, rrule: 'FREQ=DAILY' })
+    evs.push({ uid: 'journal-daily', summary: 'MY LIFE｜今日の日記', desc: '今日のことを自由に', time: r.journalTime, rrule: 'FREQ=DAILY' })
     evs.push({ uid: 'journal-weekly', summary: 'MY LIFE｜今週のふりかえり', desc: '今週できたこと・改善したいこと・来週の目標', time: r.journalTime, rrule: 'FREQ=WEEKLY;BYDAY=SU' })
     evs.push({ uid: 'journal-monthly', summary: 'MY LIFE｜今月のふりかえり', desc: '今月のベスト3・来月の目標', time: r.journalTime, rrule: 'FREQ=MONTHLY;BYMONTHDAY=-1' })
   }

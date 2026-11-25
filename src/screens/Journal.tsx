@@ -12,11 +12,8 @@ import { pct, yen, yenSigned } from '../lib/format'
 type Kind = JournalTarget['kind']
 
 const FIELDS: Record<Kind, { key: string; label: string; placeholder: string; rows?: number }[]> = {
-  daily: [
-    { key: 'good', label: '今日よかったこと', placeholder: '小さなことでも' },
-    { key: 'effort', label: '今日頑張ったこと', placeholder: '' },
-    { key: 'tomorrow', label: '明日やりたいこと', placeholder: '' },
-  ],
+  // 日次は質問なしの自由な日記（以前の「よかったこと」などは diaryText で本文にまとめて表示）
+  daily: [],
   weekly: [
     { key: 'done', label: '今週できたこと', placeholder: '' },
     { key: 'improve', label: '改善したいこと', placeholder: '' },
@@ -36,8 +33,22 @@ const FIELDS: Record<Kind, { key: string; label: string; placeholder: string; ro
   ],
 }
 
+const LEGACY_DAILY: [string, string][] = [['good', '今日よかったこと'], ['effort', '今日頑張ったこと'], ['tomorrow', '明日やりたいこと']]
+
+/** 日記の本文。以前の質問形式で書いた日は、見出しつきで1つの文章にまとめる */
+export function diaryText(fields: Record<string, string>): string {
+  if (fields.diary != null) return fields.diary
+  return LEGACY_DAILY.filter(([k]) => fields[k]?.trim()).map(([k, label]) => `【${label}】\n${fields[k].trim()}`).join('\n\n')
+}
+
+/** 一覧などで使う、最初のひとこと */
+export function journalPreview(kind: Kind, fields: Record<string, string>): string {
+  if (kind === 'daily') return diaryText(fields).replace(/【[^】]*】\n?/g, '').replace(/\n{2,}/g, '\n').trim()
+  return Object.values(fields).find((v) => v.trim()) ?? ''
+}
+
 export const MOODS = ['とても良い', '良い', 'ふつう', 'すこし低め', 'つかれた']
-const KIND_LABEL: Record<Kind, string> = { daily: '日次', weekly: '週次', monthly: '月次' }
+const KIND_LABEL: Record<Kind, string> = { daily: '日記', weekly: '週次', monthly: '月次' }
 
 const currentKey = (k: Kind, today: string) => (k === 'daily' ? today : k === 'weekly' ? weekStart(today) : monthKey(today))
 const labelOf = (k: Kind, key: string) => (k === 'daily' ? formatJa(key) : k === 'weekly' ? formatWeekJa(key) : formatMonthJa(key))
@@ -64,7 +75,8 @@ export default function JournalScreen({ initial, onBack, embedded }: { initial: 
     setFields({}); setMood(undefined); setStatus('')
     db.journals.where('[kind+periodKey]').equals([kind, key]).first().then((e) => {
       if (!alive) return
-      setFields(e?.fields ?? {}); setMood(e?.mood)
+      const f = e?.fields ?? {}
+      setFields(kind === 'daily' ? { diary: diaryText(f) } : f); setMood(e?.mood)
     })
     return () => { alive = false }
   }, [kind, key])
@@ -104,7 +116,7 @@ export default function JournalScreen({ initial, onBack, embedded }: { initial: 
         </header>
       )}
       <div className={embedded ? 'space-y-4' : 'space-y-4 px-4'}>
-        <Segmented value={kind} onChange={changeKind} options={[{ value: 'daily', label: '日次' }, { value: 'weekly', label: '週次' }, { value: 'monthly', label: '月次' }]} />
+        <Segmented value={kind} onChange={changeKind} options={[{ value: 'daily', label: '日記' }, { value: 'weekly', label: '週次' }, { value: 'monthly', label: '月次' }]} />
         <div className="flex items-center justify-between">
           <IconButton name="chevL" label="前へ" onClick={() => goKey(shiftKey(kind, key, -1))} />
           <div className="text-center">
@@ -116,18 +128,23 @@ export default function JournalScreen({ initial, onBack, embedded }: { initial: 
           <IconButton name="chevR" label="次へ" onClick={() => key < cur && goKey(shiftKey(kind, key, 1))} className={key >= cur ? 'opacity-30' : ''} />
         </div>
 
-        <PeriodFacts kind={kind} periodKey={key} />
+        {kind !== 'daily' && <PeriodFacts kind={kind} periodKey={key} />}
 
         <Card>
-          <SectionTitle en={kind === 'daily' ? 'Daily journal' : kind === 'weekly' ? 'Weekly review' : 'Monthly review'} ja={`${KIND_LABEL[kind]}のふりかえり`}
+          <SectionTitle en={kind === 'daily' ? 'Diary' : kind === 'weekly' ? 'Weekly review' : 'Monthly review'} ja={kind === 'daily' ? 'この日の日記' : `${KIND_LABEL[kind]}のふりかえり`}
             right={<span className="text-[11px] text-ink-faint" aria-live="polite">{status === 'saving' ? '保存中…' : status === 'saved' ? '保存しました' : ''}</span>} />
           {kind === 'daily' && (
             <div className="mb-4" role="group" aria-label="今日の気分">
-              <p className="mb-1.5 text-[12px] text-ink-soft">今日の気分</p>
+              <p className="mb-1.5 text-[12px] text-ink-soft">気分</p>
               <div className="flex flex-wrap gap-2">
                 {MOODS.map((m, i) => <Chip key={m} active={mood === i} onClick={() => pickMood(i)}>{m}</Chip>)}
               </div>
             </div>
+          )}
+          {kind === 'daily' && (
+            <textarea value={fields.diary ?? ''} onChange={(e) => setField('diary', e.target.value)} placeholder="今日のこと、思ったこと、なんでも自由に" aria-label="日記"
+              className="mb-3 w-full resize-none rounded-2xl border border-beige bg-white px-4 py-3 text-[16px] leading-[1.9] text-ink outline-none placeholder:text-ink-faint focus:border-sage"
+              style={{ fieldSizing: 'content', minHeight: 240 } as React.CSSProperties} />
           )}
           {FIELDS[kind].map((f) => (
             <label key={f.key} className={`block ${f.label ? 'mb-4' : '-mt-2 mb-4'}`}>
@@ -140,12 +157,14 @@ export default function JournalScreen({ initial, onBack, embedded }: { initial: 
           <p className="text-center text-[11px] text-ink-faint">入力すると自動で保存されます</p>
         </Card>
 
+        {kind === 'daily' && <PeriodFacts kind={kind} periodKey={key} />}
+
         <Card>
-          <SectionTitle en="Archive" ja="これまでのふりかえり" />
+          <SectionTitle en="Archive" ja={kind === 'daily' ? 'これまでの日記' : 'これまでのふりかえり'} />
           {history.length === 0 ? <p className="py-3 text-center text-[12px] text-ink-faint">まだありません</p> : (
             <ul className="divide-y divide-cream">
               {history.map((j) => {
-                const first = Object.entries(j.fields).filter(([, v]) => v.trim())[0]
+                const first = journalPreview(kind, j.fields)
                 return (
                   <li key={j.id}>
                     <button type="button" onClick={() => { goKey(j.periodKey); window.scrollTo({ top: 0 }) }} className="block w-full py-2.5 text-left">
@@ -153,7 +172,7 @@ export default function JournalScreen({ initial, onBack, embedded }: { initial: 
                         <span>{labelOf(kind, j.periodKey)}</span>
                         {j.mood != null && <span className="rounded-full bg-cream px-2 text-[10px]">{MOODS[j.mood]}</span>}
                       </span>
-                      {first && <span className="mt-0.5 block truncate text-[14px] text-ink">{first[1]}</span>}
+                      {first && <span className={`mt-0.5 block text-[14px] text-ink ${kind === 'daily' ? 'line-clamp-2 whitespace-pre-line leading-relaxed' : 'truncate'}`}>{first}</span>}
                     </button>
                   </li>
                 )

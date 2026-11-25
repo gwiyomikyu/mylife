@@ -228,7 +228,7 @@ function ReminderSettings() {
       <ul className="divide-y divide-cream">
         <ReminderRow on={r.daily} onToggle={() => set({ daily: !r.daily })} title="今日の習慣チェック" sub="毎日" time={r.dailyTime} onTime={(v) => set({ dailyTime: v })} />
         <ReminderRow on={r.routine} onToggle={() => set({ routine: !r.routine })} title="週次・月次の習慣" sub="決めた曜日・週の初日" time={r.routineTime} onTime={(v) => set({ routineTime: v })} />
-        <ReminderRow on={r.journal} onToggle={() => set({ journal: !r.journal })} title="ふりかえり" sub="毎日・日曜・月末" time={r.journalTime} onTime={(v) => set({ journalTime: v })} />
+        <ReminderRow on={r.journal} onToggle={() => set({ journal: !r.journal })} title="日記・ふりかえり" sub="毎日（日記）・日曜・月末" time={r.journalTime} onTime={(v) => set({ journalTime: v })} />
       </ul>
       <Button onClick={exportICS} className="mt-3 w-full">カレンダーに登録するファイルを書き出す</Button>
       {howto && (
